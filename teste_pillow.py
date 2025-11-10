@@ -37,6 +37,7 @@ try:
         power=14
     )
 except Exception as e:
+    lora = None
     print(f"❌ Erro: {e}")
 
 # --- Configuração ---
@@ -95,7 +96,7 @@ while True:
     # Captura foto com Pi Camera
     print("📸 Capturando foto...")
     os.system("rpicam-jpeg --output frame.jpg -t 1")
-    os.system("jpegtran -rotate 90 -outfile frame.jpg frame.jpg")
+    #os.system("jpegtran -rotate 90 -outfile frame.jpg frame.jpg")
 
     # 1. Carregar e Pré-processar Imagem (com Pillow)
     print(f"Lendo imagem {IMAGE_PATH}...")
@@ -156,13 +157,15 @@ while True:
     img.save(OUTPUT_PATH)
     print(f"--- Detecção concluída! {len(indices)} 'cachos' encontrados. ---")
     print(f"Imagem salva em {OUTPUT_PATH}")
-    payload = {"frutos": indices}
+    payload = {"frutos": len(indices)}
     message = json.dumps(payload)
-    success = lora.send_message(message.encode())
-    
-    if success:
-        print("Mensagem enviada com sucesso!")
+    if lora:
+        success = lora.send_message(message.encode())
+        
+        if success:
+            print("Mensagem enviada com sucesso!")
+        else:
+            print("❌ Falha no envio, tentando novamente...")
     else:
-        print("❌ Falha no envio, tentando novamente...")
-
+        print("Mensagem não enviada pois o lora n foi inicializado")
 
