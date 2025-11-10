@@ -23,21 +23,21 @@ GPIO.output(LED_AMARELO, GPIO.HIGH)
 
 # Conexao do modulo Lora
 
-# try:
-#     print("=== Conectando Lora ===")
+try:
+    print("=== Conectando Lora ===")
     
-#     # Inicializar LoRa
-#     lora = SX1276_Corrected(
-#         spi_bus=0,
-#         spi_device=0,
-#         reset_pin=25,
-#         cs_pin=8,
-#         dio0_pin=24,
-#         frequency=915000000,
-#         power=14
-#     )
-# except Exception as e:
-#     print(f"❌ Erro: {e}")
+    # Inicializar LoRa
+    lora = SX1276_Corrected(
+        spi_bus=0,
+        spi_device=0,
+        reset_pin=25,
+        cs_pin=8,
+        dio0_pin=24,
+        frequency=915000000,
+        power=14
+    )
+except Exception as e:
+    print(f"❌ Erro: {e}")
 
 # --- Configuração ---
 MODEL_PATH = "grad_final_int8.tflite"  # Seu modelo INT8
@@ -156,5 +156,13 @@ while True:
     img.save(OUTPUT_PATH)
     print(f"--- Detecção concluída! {len(indices)} 'cachos' encontrados. ---")
     print(f"Imagem salva em {OUTPUT_PATH}")
+    payload = {"frutos": indices}
+    message = json.dumps(payload)
+    success = lora.send_message(message.encode())
+    
+    if success:
+        print("Mensagem enviada com sucesso!")
+    else:
+        print("❌ Falha no envio, tentando novamente...")
 
 
