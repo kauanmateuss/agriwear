@@ -40,11 +40,11 @@ GPIO.output(LED_AMARELO, GPIO.HIGH)
 #     print(f"❌ Erro: {e}")
 
 # --- Configuração ---
-MODEL_PATH = "teste01.tflite"  # Seu modelo INT8
+MODEL_PATH = "grad_final_int8.tflite"  # Seu modelo INT8
 IMAGE_PATH = "frame.jpeg"  # A imagem que você quer contar
 OUTPUT_PATH = "resultado_pillow.jpg"
 CLASS_NAMES = ["cacho"]
-CONF_THRESH = 0.3
+CONF_THRESH = 0.7
 NMS_THRESH = 0.4
 
 
@@ -86,21 +86,21 @@ input_dtype = input_details[0]['dtype']
 while True:
     GPIO.output(LED_AMARELO, GPIO.HIGH)
     GPIO.output(LED_AZUL, GPIO.LOW)
-    if GPIO.input(BUTTON_PIN) == GPIO.LOW:
-        GPIO.output(LED_AMARELO, GPIO.LOW)
-        GPIO.output(LED_AZUL, GPIO.HIGH)
-        # Captura foto com Pi Camera
-        print("📸 Capturando foto...")
-        os.system("rpicam-jpeg --output frame.jpg -t 1")
-        
-        # Verifica se a foto foi capturada
-        if not os.path.exists(IMAGE_PATH):
-            print("❌ Erro: Foto não foi capturada")
-            continue
+    print("Aperte o botao para capturar a imagem")
+    while True:
+        if GPIO.input(BUTTON_PIN) == GPIO.LOW:
+            break
+    GPIO.output(LED_AMARELO, GPIO.LOW)
+    GPIO.output(LED_AZUL, GPIO.HIGH)
+    # Captura foto com Pi Camera
+    print("📸 Capturando foto...")
+    os.system("rpicam-jpeg --output frame.jpg -t 1")
+    os.system("jpegtran -rotate 90 -outfile frame.jpg frame.jpg")
+
     # 1. Carregar e Pré-processar Imagem (com Pillow)
     print(f"Lendo imagem {IMAGE_PATH}...")
     try:
-        img = Image.open(IMAGE_PATH).convert('RGB')
+        img = Image.open("frame.jpg").convert('RGB')
     except FileNotFoundError:
         print(f"Erro: Arquivo de imagem não encontrado em {IMAGE_PATH}")
         exit()
@@ -156,3 +156,5 @@ while True:
     img.save(OUTPUT_PATH)
     print(f"--- Detecção concluída! {len(indices)} 'cachos' encontrados. ---")
     print(f"Imagem salva em {OUTPUT_PATH}")
+
+
